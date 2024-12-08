@@ -1,0 +1,31 @@
+---
+- name: Install openvpn and easy-rsa
+  ansible.builtin.apt:
+    name:
+      - openvpn
+      - easy-rsa
+    state: present
+    update_cache: yes
+
+- name: Ensure Easy-RSA directory exists
+  ansible.builtin.file:
+    path: "{{ openvpn_easy_rsa_path }}"
+    state: "directory"
+    mode: "0755"
+
+- name: Setup CA
+  ansible.builtin.include_tasks:
+    file: "setup-ca.yml"
+
+- name: Place server conf
+  template:
+    src: "{{ openvpn_server_config_name }}"
+    dest: "{{ openvpn_config_path }}/server.ovpn"
+  notify: Restart OpenVPN
+
+- name: Place client conf
+  template:
+    src: "{{ openvpn_client_config_name }}"
+    dest: "{{ openvpn_config_path }}/client.ovpn"
+  notify: Restart OpenVPN
+
